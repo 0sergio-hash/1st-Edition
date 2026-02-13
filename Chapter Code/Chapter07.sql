@@ -262,13 +262,16 @@ SELECT * FROM DEMO7_DB.HRDATA.EMPLOYEES;
 
 // Page 253 - Make sure you are logged back in as yourself
 USE ROLE ACCOUNTADMIN;
-CREATE OR REPLACE masking policy DEMO7_DB.HRDATA.namemask
- AS (EMP_ID integer, DEPT_ID integer) returns integer ->
- CASE WHEN current_role() = 'HR_ROLE'
- then EMP_ID WHEN DEPT_ID = '100'
- then EMP_ID
- ELSE '**MASKED**' END;
 
+CREATE OR REPLACE MASKING POLICY DEMO7_DB.HRDATA.NAMEMASK
+AS (EMP_ID integer, DEPT_ID integer) returns integer ->
+    CASE WHEN CURRENT_ROLE() = 'HR_ROLE' THEN EMP_ID
+         WHEN DEPT_ID        = '100'     THEN EMP_ID
+         ELSE 999 END;         
+
+ALTER TABLE DEMO7_DB.HRDATA.EMPLOYEES MODIFY COLUMN EMP_ID
+SET MASKING POLICY DEMO7_DB.HRDATA.NAMEMASK
+USING (EMP_ID, DEPT_ID);
 
 // Page 254 - Create a mapping table 
 USE ROLE SYSADMIN;
@@ -350,4 +353,5 @@ SELECT * FROM v_ratings_summary;
 // Page 258 - Code Cleanup
 USE ROLE ACCOUNTADMIN;
 DROP DATABASE DEMO7_DB;
+
 DROP USER ADAM; 
